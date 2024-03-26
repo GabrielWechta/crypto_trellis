@@ -1,7 +1,7 @@
 import random
 from typing import List
 
-from src.utils import dot_prod
+from src.vector_utils import dot_prod, scalar_prod, sub_vectors, add_vectors
 
 
 class Matrix:
@@ -42,7 +42,7 @@ class Matrix:
 
     def __str__(self):
         matrix_str = ""
-        max_element_len = max(max(len(str(element)) for element in row) for row in self.elements)
+        max_element_len = max(max(len("{:.2f}".format(element)) for element in row) for row in self.elements)
         for row in self.elements:
             for element in row:
                 if isinstance(element, int):
@@ -102,32 +102,39 @@ class Matrix:
         return Matrix(elements=cofactors).transpose()
 
     def to_row_echelon_form(self):
-        # TODO fix this
-        lead = 0
-        row_count = self.rows_num
-        col_count = self.cols_num
-        for r in range(row_count):
-            if lead >= col_count:
-                return
-            i = r
-            while self.elements[i][lead] == 0:
-                i += 1
-                if i == row_count:
-                    i = r
-                    lead += 1
-                    if col_count == lead:
-                        return
-            self.elements[i], self.elements[r] = self.elements[r], self.elements[i]
+        current_row = 0
+        current_col = 0
+        while current_row < self.rows_num:
+            pivot_row = current_row
+            while pivot_row < self.rows_num and self.elements[pivot_row][current_col] == 0:
+                pivot_row += 1
+            if pivot_row >= self.rows_num:
+                current_col += 1
+            else:
+                self.elements[current_row], self.elements[pivot_row] = self.elements[pivot_row], self.elements[current_row]
+                scale_factor = self.elements[current_row][current_col]
+                for j in range(current_col, self.cols_num):
+                    self.elements[current_row][j] /= scale_factor
+                for i in range(current_row + 1, self.rows_num):
+                    elimination_factor = self.elements[i][current_col]
+                    for j in range(current_col, self.cols_num):
+                        self.elements[i][j] -= elimination_factor * self.elements[current_row][j]
+                current_row += 1
+                current_col += 1
 
-            lv = self.elements[r][lead]
-            self.elements[r] = [mrx / lv for mrx in self.elements[r]]
+    def gram_schmidt_orthogonalization(self):
+        ortho_elements = []
+        for j in range(self.rows_num):
+            v = self.elements[j]
+            ortho_fac = [0 for _ in range(self.cols_num)]
+            for i in range(j):
+                mu = dot_prod(v, ortho_elements[i]) / dot_prod(ortho_elements[i], ortho_elements[i])
+                ortho_fac = add_vectors(ortho_fac, scalar_prod(mu, ortho_elements[i]))
+            ortho_v = sub_vectors(v, ortho_fac)
+            ortho_elements.append(ortho_v)
+        self.elements = ortho_elements
 
-            for i in range(row_count):
-                if i != r:
-                    lv = self.elements[i][lead]
-                    self.elements[i] = [iv - lv * rv for rv, iv in zip(self.elements[r], self.elements[i])]
 
-            lead += 1
 
 
 if __name__ == "__main__":
@@ -135,6 +142,6 @@ if __name__ == "__main__":
     n = Matrix(dim=6)
     e = m * n
     print(e)
-    e.to_row_echelon_form()
+    e.gram_schmidt_orthogonalization()
     print(e)
     # print(m.get_determinant())
