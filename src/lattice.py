@@ -35,7 +35,7 @@ class Lattice:
         self.minkowski_first_theorem_distance = self.get_minkowski_first_theorem_distance()
 
     def get_minkowski_first_theorem_distance(self):
-        return math.sqrt(self.dimension) * self.basis.get_determinant() ** (1 / self.dimension)
+        return math.sqrt(self.dimension) * abs(self.basis.get_determinant()) ** (1 / self.dimension)
 
 
 if __name__ == '__main__':

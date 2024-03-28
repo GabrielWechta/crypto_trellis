@@ -2,7 +2,7 @@ import random
 from typing import List
 
 from src.vector_utils import dot_prod, scalar_prod, sub_vectors, add_vectors
-
+from copy import deepcopy
 
 class Matrix:
     def __init__(self, elements: List[List[int | float]] = None, dim: int = None, identity: bool = False):
@@ -133,6 +133,9 @@ class Matrix:
             ortho_v = sub_vectors(v, ortho_fac)
             ortho_elements.append(ortho_v)
         self.elements = ortho_elements
+
+    def deepcopy(self):
+        return deepcopy(self)
 
 
 
